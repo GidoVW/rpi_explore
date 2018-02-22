@@ -6,6 +6,13 @@
 int main()
 {
   printf("Hello\n");
-  SetGpioOutput(1);
+  InitGpioOutput(1);
+  
+  while(1) {
+   SetGpioOutput(1);
+   sleep(1);
+   SetGpioOutput(0);
+   sleep(1);
+  } 
   return;
 }

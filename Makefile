@@ -1,8 +1,9 @@
 SRCS=src/*.c
+INCLUDES=inc/
 
 CC=gcc
 
 all:: $(SRCS)
-	gcc $(SRCS)
+	gcc -I$(INCLUDES) $(SRCS)
 
 

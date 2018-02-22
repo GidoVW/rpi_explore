@@ -1,3 +1,13 @@
+/**
+ * @filename src/gpio_drv.c
+ * @author:  Gido van Wijk
+ * @date:    Feb 2018
+ * @brief
+ *
+ * @changes
+ * 12/02/18 - First version
+ **/
+
 #include "gpio_drv.h"
 
 #include <stdio.h>
@@ -9,9 +19,9 @@
 
 #include <unistd.h>
 
-struct Bcm2835Peripheral gpio = {GPIO_BASE};
+struct BcmPeriph gpio = {GPIO_BASE};
 
-int MapPeripheral(struct Bcm2835Peripheral *p)
+int MapPeripheral(struct BcmPeriph *p)
 {
   int ret = 0;
   p->mem_fd = open("/dev/mem", O_SYNC|O_RDWR); 
@@ -29,6 +39,7 @@ int MapPeripheral(struct Bcm2835Peripheral *p)
 
     if (p->map != MAP_FAILED) {
       p->addr = (volatile uint32_t *)p->map;
+      printf("Mapped address: %d\n", *(p->addr));
       ret = 1;
     } else {
       printf("MAP FAILED.\n");
@@ -39,19 +50,33 @@ int MapPeripheral(struct Bcm2835Peripheral *p)
   return ret;
 }
 
-void UnmapPeripheral(struct Bcm2835Peripheral *p)
+void UnmapPeripheral(struct BcmPeriph *p)
 {
   munmap(p->map,
          BLOCK_SIZE);
   close(p->mem_fd);
 }
 
-int SetGpioOutput(int nb)
+int InitGpioOutput(int gpio_nb)
 {
   int ret = 0;
 
   if(MapPeripheral(&gpio)) {
-    *(gpio.addr) = nb;
+    *(gpio.addr) = 1 << 12;
+    UnmapPeripheral(&gpio);
+    ret = 1;
+  } else {
+    printf("InitGpioOutput: Error.\n");
+  }
+  return ret;
+}
+
+int SetGpioOutput(int gpio_nb)
+{
+  int ret = 0;
+
+  if(MapPeripheral(&gpio)) {
+    *(gpio.addr+GPSET0) = gpio_nb << 4;
     UnmapPeripheral(&gpio);
     ret = 1; 
   } else {
