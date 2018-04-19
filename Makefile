@@ -4,6 +4,6 @@ INCLUDES=inc/
 CC=gcc
 
 all:: $(SRCS)
-	gcc -I$(INCLUDES) $(SRCS)
+	$(CC) -g -I$(INCLUDES) $(SRCS)
 
 
