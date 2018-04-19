@@ -40,7 +40,6 @@ int MapPeripheral(struct BcmPeriph *p)
 
     if (p->map != MAP_FAILED) {
       p->addr = (volatile uint32_t *)p->map;
-      printf("Mapped address: %d, value %d\n", p->addr, *(p->addr));
       ret = 1;
     } else {
       printf("MAP FAILED.\n");
