@@ -58,42 +58,33 @@ void UnmapPeripheral(struct BcmPeriph *p)
   close(p->mem_fd);
 }
 
-int InitGpioOutput(int gpio_nb)
+int InitGpioOutput(int pin)
 {
-  int ret = 0;
-
-  if(MapPeripheral(&gpio)) {
-    printf("Current config: %d\n", *(gpio.addr));
-    *(gpio.addr) = 0;
-    *(gpio.addr) = 1 << 12;
-    UnmapPeripheral(&gpio);
-    ret = 1;
-  } else {
-    printf("InitGpioOutput: Error.\n");
+  if(!MapPeripheral(&gpio)) {
+    return -1;
   }
-  return ret;
+  int reg_off = pin/10;
+  printf("pin: %d, reg_off: %d, shift %d\n", pin, reg_off, (pin%10)*3);
+  *(gpio.addr + reg_off) ^= 1 << (pin % 10)*3;
+  UnmapPeripheral(&gpio);
+  return 1;
 }
 
-int SetGpioOutput(int gpio_nb)
+int SetGpioOutput(int pin, int val)
 {
-  int ret = 0;
-  int current_val = 0;
-
-  if(MapPeripheral(&gpio)) {
-    current_val = *(gpio.addr+13);
-    printf("Current value of pin is:  %d\n", current_val);
-    if (gpio_nb == 1) {
-      printf("Setting bit, current val: %d\n", *(gpio.addr+7));
-      *(gpio.addr+7) = (1 << 4);
-    } else if (gpio_nb == 0) {
-      printf("Clearing bit, current val: %d\n", *(gpio.addr+10));
-      *(gpio.addr+10) = (1 << 4);
-    }
-    UnmapPeripheral(&gpio);
-    ret = 1; 
-  } else {
-    printf("Error somehow\n");
+  if(!MapPeripheral(&gpio)) {
+    return -1;
   }
-  return ret;
+  int reg_off;
+  if (pin >= 0  && pin < 32) reg_off = 0;
+  if (pin >= 32 && pin < 64) reg_off = 1; 
+  printf("pin %d, val %d\n", pin, val);
+  if (val == 1) {
+    *(gpio.addr+7+reg_off) = (1 << pin);
+  } else {
+    *(gpio.addr+10+reg_off) = (1 << pin);
+  }
+  UnmapPeripheral(&gpio);
+  return 1;
 }
 
