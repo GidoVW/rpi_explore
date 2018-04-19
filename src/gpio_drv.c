@@ -25,13 +25,12 @@ struct BcmPeriph gpio = {GPIO_BASE, 0, NULL, NULL};
 
 int MapPeripheral(struct BcmPeriph *p)
 {
-  int ret = 0;
-  p->mem_fd = open("/dev/mem", O_SYNC|O_RDWR); 
+  int ret = -1;
+  p->mem_fd = open("/dev/gpiomem", O_SYNC|O_RDWR); 
   if (p->mem_fd < 0) {
-    printf("Failed to open /dev/mem\n");
+    printf("Failed to open /dev/gpiomem\n");
     perror("open");
   } else {
-    printf("File Descriptor: %d\n", p->mem_fd); 
     p->map = mmap(NULL,
                   BLOCK_SIZE,
                   PROT_READ|PROT_WRITE,

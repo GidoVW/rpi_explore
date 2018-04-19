@@ -18,4 +18,8 @@ struct BcmPeriph {
   void              *map;
   volatile uint32_t *addr;
 };
+
+extern int SetGpioOutput(int pin, int val);
+extern int InitGpioOutput(int pin);
+
 #endif //GPIO_DRV_H
