@@ -3,25 +3,26 @@
 
 #include "gpio_drv.h"
 
-static const int green_led = 17;
-static const int red_led = 4;
-static const int blue_led = 10;
+static const int green = 17;
+static const int red = 4;
+static const int blue = 10;
 
 int main()
 {
-  int led = 17;
   printf("Hello\n");
-  InitGpioOutput(led);
+  int err = 0;
 
-  SetGpioOutput(led, 0);
+  rpio_pin_s blue_led;
+  if (!rpioInit(&blue_led, 10, RPIO_OUTPUT)) {
+    printf("Failed to initialize blue_led.\n");
+    return -1;
+  }
 
-  
+
+
+
   while(1) {
-    printf("Led..\n");
-    SetGpioOutput(led, 1);
-    sleep(1);
-    SetGpioOutput(led, 0);
-    sleep(1);
-  } 
-  return;
+
+  }
+  return 1;
 }

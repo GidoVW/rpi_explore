@@ -3,23 +3,33 @@
 
 #include <stdint.h>
 
-#define BCM2835_PERIPH_BASE 0x3f000000
-#define GPIO_OFFSET         0x00200000
-#define GPIO_BASE           (BCM2835_PERIPH_BASE + GPIO_OFFSET)
-#define GPSET0              7
-#define GPCLR0              10
-#define GPLEV0              13
+typedef enum {
+  RPIO_OUTPUT,
+  RPIO_INPUT
+} _rpio_cfg_e;
 
-#define BLOCK_SIZE          (4*1024)
+typedef enum {
+  LO, HI
+} _rpio_val_e;
 
-struct BcmPeriph {
-  uint32_t          addr_ptr;
-  int               mem_fd;
-  void              *map;
-  volatile uint32_t *addr;
-};
+typedef struct {
+  uint8_t     pin;
+  _rpio_cfg_e cfg;
+  _rpio_val_e val;
+} rpio_pin_s;
 
-extern int SetGpioOutput(int pin, int val);
-extern int InitGpioOutput(int pin);
+extern int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg);
+extern int rpioSet (rpio_pin_s *p, _rpio_val_e val);
+extern int rpioGet (rpio_pin_s *p, _rpio_val_e *val);
+
+/* VERBOSITY LEVELS NOT IMPLEMENTED. */
+typedef enum {
+  RPIO_VERY_VERBOSE,
+  RPIO_VERBOSE,
+  RPIO_QUIET
+} _rpio_verbose_e;
+
+extern int rpioVerbosity(_rpio_verbose_e v);
+
 
 #endif //GPIO_DRV_H
