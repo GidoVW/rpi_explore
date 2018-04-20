@@ -3,9 +3,9 @@
 
 #include "gpio_drv.h"
 
-static const int green = 17;
-static const int red = 4;
-static const int blue = 10;
+#define GREEN_PIN 17
+#define RED_PIN    4
+#define BLUE_PIN  10
 
 int main()
 {
@@ -13,16 +13,25 @@ int main()
   int err = 0;
 
   rpio_pin_s blue_led;
-  if (!rpioInit(&blue_led, 10, RPIO_OUTPUT)) {
+  if (!rpioInit(&blue_led, BLUE_PIN, RPIO_OUTPUT)) {
     printf("Failed to initialize blue_led.\n");
     return -1;
   }
 
+  rpio_pin_s red_led;
+  if (!rpioInit(&red_led, RED_PIN, RPIO_OUTPUT)) {
+    printf("Failed to initialize red_led.\n");
+    return -1;
+  }
 
-
+  rpio_pin_s green_led;
+  if (!rpioInit(&green_led, GREEN_PIN, RPIO_OUTPUT)) {
+    printf("Failed to initialize green_led.\n");
+    return -1;
+  }
 
   while(1) {
-
+    rpioSet(&red_led, HI);
   }
   return 1;
 }
