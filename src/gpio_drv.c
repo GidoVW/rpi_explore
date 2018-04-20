@@ -45,10 +45,10 @@ struct BcmPeriph {
 #define ERR_MAP_FAIL     -3
 
 /* Mapping */
-static int  MapPeripheral  (struct BcmPeriph *p);
-static void UnmapPeripheral(struct BcmPeriph *p);
+static int  _MapPeripheral  (struct BcmPeriph *p);
+static void _UnmapPeripheral(struct BcmPeriph *p);
 
-static int InitRpioIO(int pin, _rpio_cfg_e cfg);
+static int _InitRpioIO(int pin, _rpio_cfg_e cfg);
 
 static void _log_err(const char *func, const int line, char *msg, int errnum);
 
@@ -69,7 +69,7 @@ int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg)
   p->pin = pin;
   p->cfg = cfg;
 
-  ret = InitRpioIO(pin, cfg);
+  ret = _InitRpioIO(pin, cfg);
   if (ret == ERR_IO_WRONG_CFG) {
     _err("Available cfg options: RPIO_OUTPUT RPIO_INPUT");
     return 0;
@@ -90,7 +90,7 @@ int rpioSet(rpio_pin_s *p, _rpio_val_e val)
     _err("cfg is not RPIO_OUTPUT");
     return 0;
   }
-  if(!MapPeripheral(&gpio)) {
+  if(!_MapPeripheral(&gpio)) {
     return 0;
   }
 
@@ -107,7 +107,7 @@ int rpioSet(rpio_pin_s *p, _rpio_val_e val)
   } else if (val == LO) {
     *(gpio.addr+10+reg_off) = (1 << pin);
   }
-  UnmapPeripheral(&gpio);
+  _UnmapPeripheral(&gpio);
   p->val = val;
   return 1;
 }
@@ -122,7 +122,7 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
     _err("cfg is not RPIO_INPUT");
     return 0;
   }
-  if(!MapPeripheral(&gpio)) {
+  if(!_MapPeripheral(&gpio)) {
     return 0;
   }
 
@@ -151,9 +151,9 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
  * RPIO TOOLBOX
  */
 
- static int InitRpioIO(int pin, _rpio_cfg_e cfg)
+ static int _InitRpioIO(int pin, _rpio_cfg_e cfg)
  {
-   if(!MapPeripheral(&gpio)) {
+   if(!_MapPeripheral(&gpio)) {
      return ERR_MAP_FAIL;
    }
    int bits;
@@ -171,11 +171,11 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
    printf("pin: %d, reg_off: %d, shift %d\n", pin, reg_off, (pin%10)*3);
    *(gpio.addr + reg_off) &= ~(0b111 << (pin % 10)*3);
    *(gpio.addr + reg_off) |= (bits << (pin % 10)*3);
-   UnmapPeripheral(&gpio);
+   _UnmapPeripheral(&gpio);
    return 1;
  }
 
-static int MapPeripheral(struct BcmPeriph *p)
+static int _MapPeripheral(struct BcmPeriph *p)
 {
   int ret = -1;
   p->mem_fd = open("/dev/gpiomem", O_SYNC|O_RDWR);
@@ -201,7 +201,7 @@ static int MapPeripheral(struct BcmPeriph *p)
   return ret;
 }
 
-static void UnmapPeripheral(struct BcmPeriph *p)
+static void _UnmapPeripheral(struct BcmPeriph *p)
 {
   munmap(p->map,
          BLOCK_SIZE);
