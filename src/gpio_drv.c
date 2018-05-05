@@ -101,7 +101,6 @@ int rpioSet(rpio_pin_s *p, _rpio_val_e val)
     _err("pin should be < 53");
     return 0;
   }
-  printf("pin %d, val %d\n", pin, val);
   if (val == HI) {
     *(gpio.addr+7+reg_off) = (1 << pin);
   } else if (val == LO) {
