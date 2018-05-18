@@ -37,6 +37,7 @@ int ServoInit(rpio_pin_s *pwm_pin, int pin_nb)
     fprintf(stderr, "Error initializing servo PWM pin.\n");
     return SERVO_FAILURE;
   }
+  return SERVO_SUCCESS;
 }
 
 /**
