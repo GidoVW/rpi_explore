@@ -12,7 +12,9 @@ typedef struct {
   volatile uint32_t *addr;
 } __bcm_periph_s;
 
-extern int  _MapPeripheral  (__bcm_periph_s *p)
+extern int  _MapPeripheral  (__bcm_periph_s *p);
 extern void _UnmapPeripheral(__bcm_periph_s *p);
+
+extern void _log_err(const char *func, const int line, char *msg, int errnum);
 
 #endif //BCMPERIPH_H

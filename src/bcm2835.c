@@ -1,4 +1,4 @@
-#include "bcmperiph.h"
+#include "bcm2835.h"
 
 #include <stdio.h>
 #include <sys/mman.h>
@@ -13,9 +13,7 @@
 #define _perr(msg)    _log_err(__FUNCTION__, __LINE__, msg, -1)
 #define _psyserr(msg) _log_err(__FUNCTION__, __LINE__, msg, errno)
 
-static void _log_err(const char *func, const int line, char *msg, int errnum);
-
-int _MapPeripheral(struct BcmPeriph *p)
+int _MapPeripheral(__bcm_periph_s *p)
 {
   int ret = -1;
   p->_mem_fd = open("/dev/gpiomem", O_SYNC|O_RDWR);
@@ -41,14 +39,14 @@ int _MapPeripheral(struct BcmPeriph *p)
   return ret;
 }
 
-void _UnmapPeripheral(struct BcmPeriph *p)
+void _UnmapPeripheral(__bcm_periph_s *p)
 {
   munmap(p->_map,
          BLOCK_SIZE);
   close(p->_mem_fd);
 }
 
-static void _log_err(const char *func, const int line, char *msg, int errnum)
+void _log_err(const char *func, const int line, char *msg, int errnum)
 {
   if (errnum < 0)
     fprintf(stderr, "%s:%d: %s\n", func, line, msg);

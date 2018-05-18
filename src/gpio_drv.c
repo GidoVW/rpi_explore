@@ -22,6 +22,8 @@
 
 #include <unistd.h>
 
+#include "bcm2835.h"
+
 #define BCM2835_PERIPH_BASE 0x3f000000
 #define GPIO_OFFSET         0x00200000
 #define GPIO_BASE           (BCM2835_PERIPH_BASE + GPIO_OFFSET)
@@ -31,13 +33,6 @@
 
 #define BLOCK_SIZE          (4*1024)
 
-struct BcmPeriph {
-  uint32_t          addr_ptr;
-  int               mem_fd;
-  void              *map;
-  volatile uint32_t *addr;
-};
-
 #define _err(msg)    _log_err(__FUNCTION__, __LINE__, msg, -1)
 #define _syserr(msg) _log_err(__FUNCTION__, __LINE__, msg, errno)
 
@@ -45,17 +40,12 @@ struct BcmPeriph {
 #define ERR_MAP_FAIL     -3
 
 /* Mapping */
-static int  _MapPeripheral  (struct BcmPeriph *p);
-static void _UnmapPeripheral(struct BcmPeriph *p);
-
 static int _InitRpioIO(int pin, _rpio_cfg_e cfg);
 
-static void _log_err(const char *func, const int line, char *msg, int errnum);
-
-struct BcmPeriph gpio = {GPIO_BASE,
-                         0,
-                         NULL,
-                         NULL};
+__bcm_periph_s gpio = {GPIO_BASE,
+                       0,
+                       NULL,
+                       NULL};
 
 int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg)
 {
@@ -174,43 +164,4 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
    return 1;
  }
 
-static int _MapPeripheral(struct BcmPeriph *p)
-{
-  int ret = -1;
-  p->mem_fd = open("/dev/gpiomem", O_SYNC|O_RDWR);
-  if (p->mem_fd < 0) {
-    _syserr("open /dev/gpiomem");
-    return 0;
-  } else {
-    p->map = mmap(NULL,
-                  BLOCK_SIZE,
-                  PROT_READ|PROT_WRITE,
-                  MAP_SHARED,
-                  p->mem_fd,
-                  p->addr_ptr);
 
-    if (p->map != MAP_FAILED) {
-      p->addr = (volatile uint32_t *)p->map;
-      ret = 1;
-    } else {
-      _syserr("mmap");
-    }
-  }
-
-  return ret;
-}
-
-static void _UnmapPeripheral(struct BcmPeriph *p)
-{
-  munmap(p->map,
-         BLOCK_SIZE);
-  close(p->mem_fd);
-}
-
-static void _log_err(const char *func, const int line, char *msg, int errnum)
-{
-  if (errnum < 0)
-    fprintf(stderr, "%s:%d: %s\n", func, line, msg);
-  else
-    fprintf(stderr, "%s:%d: %s: %s\n", func, line, msg, strerror(errnum));
-}
