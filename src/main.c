@@ -12,8 +12,6 @@
 
 int main()
 {
-  printf("Hello\n");
-  int err = 0;
   int period_us = 20000;
   int uptime_us = 1500;
   int downtime_us = period_us - uptime_us;

@@ -26,9 +26,6 @@
 const int full_angle = 90;
 const int full_angle_to_ref_us = 500;
 
-static uint32_t uptime_us = 0;
-static uint32_t downtime_us = 0;
-
 int ServoInit(rpio_pin_s *pwm_pin, int pin_nb)
 {
   int ret = 0;
