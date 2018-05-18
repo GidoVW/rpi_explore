@@ -1,6 +1,8 @@
 #ifndef BCMPERIPH_H
 #define BCMPERIPH_H
 
+#include <stdint.h>
+
 #define BCM2835_PERIPH_BASE 0x3f000000
 
 #define BLOCK_SIZE          (4*1024)
