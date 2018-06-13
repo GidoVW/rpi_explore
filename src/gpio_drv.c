@@ -24,13 +24,6 @@
 
 #include "bcm2835.h"
 
-#define BCM2835_PERIPH_BASE 0x3f000000
-#define GPIO_OFFSET         0x00200000
-#define GPIO_BASE           (BCM2835_PERIPH_BASE + GPIO_OFFSET)
-#define GPSET0              7
-#define GPCLR0              10
-#define GPLEV0              13
-
 #define BLOCK_SIZE          (4*1024)
 
 #define _err(msg)    _log_err(__FUNCTION__, __LINE__, msg, -1)
