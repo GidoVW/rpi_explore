@@ -8,10 +8,10 @@
 #define BLOCK_SIZE          (4*1024)
 
 typedef struct {
-  uint32_t          _addr_ptr;
+  uint32_t          _bcm_hw_addr;
   int               _mem_fd;
   void              *_map;
-  volatile uint32_t *addr;
+  volatile uint32_t *virt_addr;
 } __bcm_periph_s;
 
 extern int  _MapPeripheral  (__bcm_periph_s *p);

@@ -26,10 +26,10 @@ int _MapPeripheral(__bcm_periph_s *p)
                   PROT_READ|PROT_WRITE,
                   MAP_SHARED,
                   p->_mem_fd,
-                  p->_addr_ptr);
+                  p->_bcm_hw_addr);
 
     if (p->_map != MAP_FAILED) {
-      p->addr = (volatile uint32_t *)p->_map;
+      p->virt_addr = (volatile uint32_t *)p->_map;
       ret = 1;
     } else {
       _psyserr("mmap");

@@ -92,9 +92,9 @@ int rpioSet(rpio_pin_s *p, _rpio_val_e val)
     return 0;
   }
   if (val == HI) {
-    *(gpio.addr+7+reg_off) = (1 << pin);
+    *(gpio.virt_addr+7+reg_off) = (1 << pin);
   } else if (val == LO) {
-    *(gpio.addr+10+reg_off) = (1 << pin);
+    *(gpio.virt_addr+10+reg_off) = (1 << pin);
   }
   _UnmapPeripheral(&gpio);
   p->val = val;
@@ -123,7 +123,7 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
     return 0;
   }
 
-  rd = *(gpio.addr+13+reg_off);
+  rd = *(gpio.virt_addr+13+reg_off);
   rd &= 1 << pin;
   if (rd) {
     *val   = HI;
@@ -158,8 +158,8 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
    }
    int reg_off = pin/10;
    printf("pin: %d, reg_off: %d, shift %d\n", pin, reg_off, (pin%10)*3);
-   *(gpio.addr + reg_off) &= ~(0b111 << (pin % 10)*3);
-   *(gpio.addr + reg_off) |= (bits << (pin % 10)*3);
+   *(gpio.virt_addr + reg_off) &= ~(0b111 << (pin % 10)*3);
+   *(gpio.virt_addr + reg_off) |= (bits << (pin % 10)*3);
    _UnmapPeripheral(&gpio);
    return 1;
  }
