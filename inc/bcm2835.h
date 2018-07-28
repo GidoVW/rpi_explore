@@ -15,12 +15,7 @@
 
 #define BLOCK_SIZE          (4*1024)
 
-typedef struct {
-  uint32_t          _bcm_hw_addr;
-  int               _mem_fd;
-  void              *_map;
-  volatile uint32_t *virt_addr;
-} __bcm_periph_s;
+typedef struct __bcm_periph_s *bcm_peripheral_t;
 
 
 /************************************
@@ -35,12 +30,11 @@ typedef struct {
 	First, as there is an OS layer, you need to mmap the
 	memory region you want to access. This is done through API:
 
-			int _MapPeripheral (__bcm_periph_s *p);
+			int bcmMapPeripheral (bcm_peripheral_t p);
 
-	you have to provide:	
+    that is initialized using 
 
-			._bcm_hw_addr 	= GPIO_BASE,
-			._mem_fd      	= open(/dev/gpiomem, ...),
+            int bcmInitPeripheral();
 			
 	This will in turn give you 
 
@@ -103,8 +97,14 @@ typedef struct {
 
 } GPIO;
 
-extern int  _MapPeripheral  (__bcm_periph_s *p);
-extern void _UnmapPeripheral(__bcm_periph_s *p);
+extern int  bcmInitPeripheral(bcm_peripheral_t *periph, 
+	                          uint32_t         hw_addr);
+
+extern void bcmGetVirtualAddress(bcm_peripheral_t p, 
+	                             uint32_t         *base_virt_addr);
+
+extern int  bcmMapPeripheral  (bcm_peripheral_t p);
+extern void bcmUnmapPeripheral(bcm_peripheral_t p);
 
 extern void _log_err(const char *func, const int line, char *msg, int errnum);
 
