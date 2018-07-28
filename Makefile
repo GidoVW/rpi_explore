@@ -1,7 +1,13 @@
 SRCS=src/*.c
 INCLUDES=inc/
 
-CC=gcc
+ARCH=$(shell arch)
+
+ifeq ($(ARCH),x86_64)
+  CC=arm-linux-gnueabi-gcc
+else
+  CC=gcc
+endif
 
 OUTPUT=rpio
 

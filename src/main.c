@@ -5,6 +5,8 @@
 #include "gpio_drv.h"
 #include "servo.h"
 
+#include "common/rpio_err.h"
+
 #define GREEN_PIN 17
 #define RED_PIN    4
 #define BLUE_PIN  10
@@ -15,6 +17,11 @@ int main()
   int period_us = 20000;
   int uptime_us = 1500;
   int downtime_us = period_us - uptime_us;
+
+  int ret = rpioGpioDriverInit();
+  if (ret < 0) {
+    printf("Error initializing gpio driver.\n");
+  }
 
   rpio_pin_s blue_led;
   if (!rpioInit(&blue_led, BLUE_PIN, RPIO_OUTPUT)) {
@@ -34,48 +41,7 @@ int main()
     return -1;
   }
 
-  rpio_pin_s pwm_pin;
-  if (!ServoInit(&pwm_pin, PWM_PIN)) {
-    printf("Failed to initialize pwm_pin.\n");
-    return -1;
-  }
-  int i = 0;
-  
-  printf("Uptime: %d, Downtime: %d\n.", uptime_us, downtime_us);
-  
-  for(i = 0; i < 500; i++) {
-    rpioSet(&pwm_pin, HI);
-    usleep(uptime_us);
-    rpioSet(&pwm_pin, LO);
-    usleep(downtime_us);
-  }
-  uptime_us = AngleToUptime(-90);
-  downtime_us = period_us - uptime_us;
-  
-  printf("Uptime: %d, Downtime: %d\n.", uptime_us, downtime_us);
-
-  for(i = 0; i < 500; i++) {  
-    rpioSet(&pwm_pin, HI);
-    usleep(uptime_us);
-    rpioSet(&pwm_pin, LO);
-    usleep(downtime_us);
-  }
-  uptime_us = AngleToUptime(90);
-  downtime_us = period_us - uptime_us;
-
-  printf("Uptime: %d, Downtime: %d\n.", uptime_us, downtime_us);
-
-  for(i = 0; i <500; i++) {
-    rpioSet(&pwm_pin, HI);
-    usleep(uptime_us);
-    rpioSet(&pwm_pin, LO);
-    usleep(downtime_us);
-  }
-
-
-
-
-/*
+  while(1) {
     rpioSet(&green_led, LO);
     usleep(200000);
     rpioSet(&green_led, HI);
@@ -85,7 +51,7 @@ int main()
     rpioSet(&blue_led, LO);
     usleep(200000);
     rpioSet(&blue_led, HI);
-*/    
+  }
   
   return 1;
 }

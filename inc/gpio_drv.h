@@ -18,6 +18,7 @@ typedef struct {
   _rpio_val_e val;
 } rpio_pin_s;
 
+extern int rpioGpioDriverInit();
 extern int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg);
 extern int rpioSet (rpio_pin_s *p, _rpio_val_e val);
 extern int rpioGet (rpio_pin_s *p, _rpio_val_e *val);
