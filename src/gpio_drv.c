@@ -52,10 +52,10 @@ int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg)
   p->cfg = cfg;
 
   ret = _InitRpioIO(pin, cfg);
-  if (ret == ERR_IO_WRONG_CFG) {
+  if (ret == RPIOERR_WRONG_CFG) {
     _err("Available cfg options: RPIO_OUTPUT RPIO_INPUT");
     return 0;
-  } else if (ret == ERR_MAP_FAIL) {
+  } else if (ret == RPIOERR_MAP_FAIL) {
     return 0;
   }
 
@@ -141,7 +141,7 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
  {
    uint32_t *base_addr = NULL;
    if(!bcmMapPeripheral(gpio)) {
-     return ERR_MAP_FAIL;
+     return RPIOERR_MAP_FAIL;
    }
    bcmGetVirtualAddress(gpio, &base_addr);
    int bits;
@@ -153,7 +153,7 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
        bits = 0b000;
        break;
      default:
-       return ERR_IO_WRONG_CFG;
+       return RPIOERR_WRONG_CFG;
    }
    int reg_off = pin/10;
    printf("pin: %d, reg_off: %d, shift %d\n", pin, reg_off, (pin%10)*3);

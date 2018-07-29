@@ -1,6 +1,7 @@
 #include "bcm2835.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -27,23 +28,27 @@ struct __bcm_periph_s {
  *
  * @brief
  * Initializes the peripheral struct with a hardware address.
+ * Allocates memory accordingly.
  *
- * @param[in] periph the peripheral structure
+ * @param[in] p the peripheral structure
  * @param[in] hw_addr the hardware address the peripheral is mapped to
  *
- * @return  1  on success
+ * @return  RPIOERR_OK          success
+ *          RPIOERR_DYN_ALLOC   memory allocation fault
  */
-int bcmInitPeripheral(bcm_peripheral_t *periph, uint32_t hw_addr)
+int bcmInitPeripheral(bcm_peripheral_t *p, uint32_t hw_addr)
 {
-  *periph = malloc(sizeof(struct __bcm_periph_s));
-  if (*periph == NULL) {
-    return ERR_DYN_MEM_ALLOC;
+  *p = malloc(sizeof(struct __bcm_periph_s));
+  if (*p == NULL) {
+    return RPIOERR_DYN_ALLOC;
   }
-  (*periph)->_bcm_hw_addr = hw_addr;
-  (*periph)->_mem_fd      = 0;
-  (*periph)->_map         = NULL;
-  (*periph)->virt_addr    = NULL;
-  return 1; 
+
+  (*p)->_bcm_hw_addr = hw_addr;
+  (*p)->_mem_fd      = 0;
+  (*p)->_map         = NULL;
+  (*p)->virt_addr    = NULL;
+
+  return RPIOERR_OK; 
 }
 
 /**
@@ -52,7 +57,7 @@ int bcmInitPeripheral(bcm_peripheral_t *periph, uint32_t hw_addr)
  * @brief
  * Maps the peripheral address space to the process address space
  *
- * @param[in] periph the peripheral structure (needs to be initialized)
+ * @param[in] p the peripheral structure (needs to be initialized)
  *
  * @return  1  on success
  *          -1 on error
@@ -92,7 +97,7 @@ int bcmMapPeripheral(bcm_peripheral_t p)
  * @brief
  * Unmaps and closes the address space and associated mapped files.
  *
- * @param[in] periph the peripheral structure (needs to be initialized)
+ * @param[in] p the peripheral structure (needs to be initialized)
  *
  * @return  void
  */
@@ -110,13 +115,20 @@ void bcmUnmapPeripheral(bcm_peripheral_t p)
  * @brief
  * Unmaps and closes the address space and associated mapped files.
  *
- * @param[in] periph the peripheral structure (needs to be initialized)
+ * @param[in]  p the peripheral structure (needs to be initialized)
+ * @param[out] base_virt_addr the virtual base address of the peripheral p
  *
- * @return  void
+ * @return  RPIOERR_OK      success
+ *          RPIOERR_NINIT   peripheral structure not initialized
  */
-void bcmGetVirtualAddress(bcm_peripheral_t p, uint32_t *base_virt_addr)
+int bcmGetVirtualAddress(bcm_peripheral_t p, uint32_t **base_virt_addr)
 {
-  *base_virt_addr = p->virt_addr;
+  if (p != NULL)
+  {
+    *base_virt_addr = (uint32_t *)p->virt_addr;
+    return RPIOERR_OK;
+  }
+  return RPIOERR_NINIT;
 }
 
 void _log_err(const char *func, const int line, char *msg, int errnum)
