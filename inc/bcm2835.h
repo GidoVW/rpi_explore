@@ -97,11 +97,11 @@ typedef struct {
 
 } GPIO;
 
-extern int  bcmInitPeripheral(bcm_peripheral_t *periph, 
+extern int  bcmInitPeripheral(bcm_peripheral_t *p, 
 	                          uint32_t         hw_addr);
 
-extern void bcmGetVirtualAddress(bcm_peripheral_t p, 
-	                             uint32_t         *base_virt_addr);
+extern int bcmGetVirtualAddress(bcm_peripheral_t p, 
+	                            uint32_t         **base_virt_addr);
 
 extern int  bcmMapPeripheral  (bcm_peripheral_t p);
 extern void bcmUnmapPeripheral(bcm_peripheral_t p);
