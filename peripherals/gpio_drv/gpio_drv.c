@@ -22,8 +22,9 @@
 
 #include <unistd.h>
 
-#include "bcm2835.h"
-#include "common/rpio_err.h"
+#include "bcm2835/bcm2835.h"
+#include "rpio_peripherals.h"
+#include "rpio_err.h"
 
 #define BLOCK_SIZE          (4*1024)
 
@@ -33,10 +34,10 @@
 /* Mapping */
 static int _InitRpioIO(int pin, _rpio_cfg_e cfg);
 
-static bcm_peripheral_t gpio;
+static rpio_periph_t gpio;
 
 int rpioGpioDriverInit() {
-  return bcmInitPeripheral(&gpio, GPIO_BASE);
+  return rpio_init_peripheral(&gpio, GPIO_BASE);
 }
 
 int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg)
@@ -73,10 +74,10 @@ int rpioSet(rpio_pin_s *p, _rpio_val_e val)
     _err("cfg is not RPIO_OUTPUT");
     return 0;
   }
-  if(!bcmMapPeripheral(gpio)) {
+  if(!rpio_map_peripheral(gpio)) {
     return 0;
   }
-  bcmGetVirtualAddress(gpio, &base_addr);
+  rpio_get_virt_addr(gpio, &base_addr);
 
   int reg_off, pin = p->pin;
   if (pin >= 0  && pin <= 31) reg_off = 0;
@@ -90,7 +91,7 @@ int rpioSet(rpio_pin_s *p, _rpio_val_e val)
   } else if (val == LO) {
     *(base_addr+10+reg_off) = (1 << pin);
   }
-  bcmUnmapPeripheral(gpio);
+  rpio_unmap_peripheral(gpio);
   p->val = val;
   return 1;
 }
@@ -106,10 +107,10 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
     _err("cfg is not RPIO_INPUT");
     return 0;
   }
-  if(!bcmMapPeripheral(gpio)) {
+  if(!rpio_map_peripheral(gpio)) {
     return 0;
   }
-  bcmGetVirtualAddress(gpio, &base_addr);
+  rpio_get_virt_addr(gpio, &base_addr);
 
   int rd, reg_off, pin = p->pin;
   if (pin >= 0  && pin <= 31) reg_off = 0;
@@ -128,7 +129,7 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
     *val   = LO;
     p->val = LO;
   }
-  bcmUnmapPeripheral(gpio);
+  rpio_unmap_peripheral(gpio);
   return 1;
 }
 
@@ -140,10 +141,10 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
  static int _InitRpioIO(int pin, _rpio_cfg_e cfg)
  {
    uint32_t *base_addr = NULL;
-   if(!bcmMapPeripheral(gpio)) {
+   if(!rpio_map_peripheral(gpio)) {
      return RPIOERR_MAP_FAIL;
    }
-   bcmGetVirtualAddress(gpio, &base_addr);
+   rpio_get_virt_addr(gpio, &base_addr);
    int bits;
    switch(cfg) {
      case RPIO_OUTPUT:
@@ -159,7 +160,7 @@ int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
    printf("pin: %d, reg_off: %d, shift %d\n", pin, reg_off, (pin%10)*3);
    *(base_addr + reg_off) &= ~(0b111 << (pin % 10)*3);
    *(base_addr + reg_off) |= (bits << (pin % 10)*3);
-   bcmUnmapPeripheral(gpio);
+   rpio_unmap_peripheral(gpio);
    return 1;
  }
 
