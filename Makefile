@@ -1,4 +1,4 @@
-SUBDIRS+=peripherals
+SUBDIRS:=peripherals
 
 ARCH=$(shell arch)
 RPIO_INSTALL_DIR=$(shell pwd)
@@ -12,14 +12,11 @@ endif
 
 export CC
 
-all: subdirs
-
-.PHONY: subdirs $(SUBDIRS)
-
-subdirs: $(SUBDIRS)
-
+all: $(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@
+
+.PHONY: all $(SUBDIRS)
 
 test:
 	make -C sample/
