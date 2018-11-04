@@ -1,4 +1,4 @@
-#include "bcm2835.h"
+#include "rpio_peripherals.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,20 +11,20 @@
 
 #include <unistd.h>
 
-#include "common/rpio_err.h"
+#include "rpio_err.h"
 
 #define _perr(msg)    _log_err(__FUNCTION__, __LINE__, msg, -1)
 #define _psyserr(msg) _log_err(__FUNCTION__, __LINE__, msg, errno)
 
-struct __bcm_periph_s {
-  uint32_t          _bcm_hw_addr;
+struct __rpio_periph_s {
+  uint32_t          _periph_hw_addr;
   int               _mem_fd;
   void              *_map;
   volatile uint32_t *virt_addr;
 };
 
 /**
- * @name bcmInitPeripheral
+ * @name rpio_init_peripheral
  *
  * @brief
  * Initializes the peripheral struct with a hardware address.
@@ -36,14 +36,14 @@ struct __bcm_periph_s {
  * @return  RPIOERR_OK          success
  *          RPIOERR_DYN_ALLOC   memory allocation fault
  */
-int bcmInitPeripheral(bcm_peripheral_t *p, uint32_t hw_addr)
+int rpio_init_peripheral(rpio_periph_t *p, uint32_t hw_addr)
 {
-  *p = malloc(sizeof(struct __bcm_periph_s));
+  *p = malloc(sizeof(struct __rpio_periph_s));
   if (*p == NULL) {
     return RPIOERR_DYN_ALLOC;
   }
 
-  (*p)->_bcm_hw_addr = hw_addr;
+  (*p)->_periph_hw_addr = hw_addr;
   (*p)->_mem_fd      = 0;
   (*p)->_map         = NULL;
   (*p)->virt_addr    = NULL;
@@ -52,7 +52,7 @@ int bcmInitPeripheral(bcm_peripheral_t *p, uint32_t hw_addr)
 }
 
 /**
- * @name bcmMapPeripheral
+ * @name rpio_map_peripheral
  *
  * @brief
  * Maps the peripheral address space to the process address space
@@ -62,13 +62,13 @@ int bcmInitPeripheral(bcm_peripheral_t *p, uint32_t hw_addr)
  * @return  1  on success
  *          -1 on error
  */
-int bcmMapPeripheral(bcm_peripheral_t p)
+int rpio_map_peripheral(rpio_periph_t p)
 {
   int ret = -1;
 
-  p->_mem_fd = open("/dev/gpiomem", O_SYNC|O_RDWR);
+  p->_mem_fd = open("/dev/mem", O_SYNC|O_RDWR);
   if (p->_mem_fd < 0) {
-    _psyserr("open /dev/gpiomem");
+    _psyserr("open /dev/mem");
     return 0;
   } 
   else {
@@ -77,7 +77,7 @@ int bcmMapPeripheral(bcm_peripheral_t p)
                   PROT_READ|PROT_WRITE,
                   MAP_SHARED,
                   p->_mem_fd,
-                  p->_bcm_hw_addr);
+                  p->_periph_hw_addr);
 
     if (p->_map != MAP_FAILED) {
       p->virt_addr = (volatile uint32_t *)p->_map;
@@ -92,7 +92,7 @@ int bcmMapPeripheral(bcm_peripheral_t p)
 }
 
 /**
- * @name bcmUnmapPeripheral
+ * @name rpio_unmap_peripheral
  *
  * @brief
  * Unmaps and closes the address space and associated mapped files.
@@ -101,7 +101,7 @@ int bcmMapPeripheral(bcm_peripheral_t p)
  *
  * @return  void
  */
-void bcmUnmapPeripheral(bcm_peripheral_t p)
+void rpio_unmap_peripheral(rpio_periph_t p)
 {
   munmap(p->_map,
          BLOCK_SIZE);
@@ -110,7 +110,7 @@ void bcmUnmapPeripheral(bcm_peripheral_t p)
 
 
 /**
- * @name bcmGetVirtualAddress
+ * @name rpio_get_virt_addr
  *
  * @brief
  * Unmaps and closes the address space and associated mapped files.
@@ -121,7 +121,7 @@ void bcmUnmapPeripheral(bcm_peripheral_t p)
  * @return  RPIOERR_OK      success
  *          RPIOERR_NINIT   peripheral structure not initialized
  */
-int bcmGetVirtualAddress(bcm_peripheral_t p, uint32_t **base_virt_addr)
+int rpio_get_virt_addr(rpio_periph_t p, uint32_t **base_virt_addr)
 {
   if (p != NULL)
   {
