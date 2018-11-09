@@ -1,10 +1,7 @@
-SUBDIRS+=src gpio_drv
+SUBDIRS:=src gpio_drv
 
-.PHONY: subdirs $(SUBDIRS)
+.PHONY: all $(SUBDIRS)
 
-subdirs: $(SUBDIRS)
-
+all: $(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@
-
-gpio_drv: src

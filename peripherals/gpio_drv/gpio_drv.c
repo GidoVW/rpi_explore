@@ -26,142 +26,128 @@
 #include "rpio_peripherals.h"
 #include "rpio_err.h"
 
-#define BLOCK_SIZE          (4*1024)
-
 #define _err(msg)    _log_err(__FUNCTION__, __LINE__, msg, -1)
 #define _syserr(msg) _log_err(__FUNCTION__, __LINE__, msg, errno)
 
-/* Mapping */
-static int _InitRpioIO(int pin, _rpio_cfg_e cfg);
+typedef enum {
+  GPIO_OPEN,
+  GPIO_CLOSE,
+  GPIO_READ,
+  GPIO_WRITE
+} gpio_operation_e;
 
-static rpio_periph_t gpio;
-
-int rpioGpioDriverInit() {
-  return rpio_init_peripheral(&gpio, GPIO_BASE);
-}
-
-int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg)
+static int gpio(gpio_operation_e op, uint32_t reg_offset, uint32_t *data) 
 {
-  if (p == NULL) {
-    _err("NULL arguments"); 
-    return 0;
-  }
+  static rpio_periph_s gpio = {GPIO_BASE, 0, NULL, NULL};
 
-  int ret;
+  if (data == NULL && (op == GPIO_READ || op == GPIO_WRITE))
+    return INVAL_ARGS;
 
-  p->pin = pin;
-  p->cfg = cfg;
+  if (op != GPIO_OPEN && gpio.map == NULL)
+    return DEV_NOT_OPEN;
 
-  ret = _InitRpioIO(pin, cfg);
-  if (ret == RPIOERR_WRONG_CFG) {
-    _err("Available cfg options: RPIO_OUTPUT RPIO_INPUT");
-    return 0;
-  } else if (ret == RPIOERR_MAP_FAIL) {
-    return 0;
-  }
-
-  return 1;
-}
-
-int rpioSet(rpio_pin_s *p, _rpio_val_e val)
-{
+  int ret = 0;
   uint32_t *base_addr = NULL;
-  if(p == NULL) {
-    _err("NULL arguments");
-    return 0;
-  }
-  if(p->cfg != RPIO_OUTPUT) {
-    _err("cfg is not RPIO_OUTPUT");
-    return 0;
-  }
-  if(!rpio_map_peripheral(gpio)) {
-    return 0;
-  }
-  rpio_get_virt_addr(gpio, &base_addr);
 
-  int reg_off, pin = p->pin;
+  switch (op) {
+
+    case GPIO_OPEN:
+
+      if (gpio.map != NULL) {
+        return EOK;
+      }
+      return rpio_map_peripheral(&gpio);
+
+    case GPIO_CLOSE:
+    
+      if (gpio.map == NULL) {
+        return EOK;
+      }
+      rpio_unmap_peripheral(&gpio);
+      return EOK;
+
+    case GPIO_READ:
+      *data = *(gpio.virt_addr + reg_offset);
+      return EOK;
+
+    case GPIO_WRITE:
+      *(gpio.virt_addr + reg_offset) = *data;
+      return EOK;
+
+    default:
+      printf("Fatal gpio operation\n");
+      return INVAL_ARGS;
+  }
+}
+
+
+int rpio_gpio_open()
+{
+  gpio(GPIO_OPEN, 0, NULL);
+}
+
+int rpio_gpio_close()
+{
+  gpio(GPIO_CLOSE, 0, NULL);
+}
+
+static int gpio_read(uint32_t addr, uint32_t *data) {
+  int offset = addr - GPIO_BASE;
+  return gpio(GPIO_READ, offset, data);
+}
+
+static int gpio_write(uint32_t addr, uint32_t data) {
+  return gpio(GPIO_WRITE, addr, data);
+}
+
+int rpio_gpio_set_cfg(uint32_t pin, gpio_cfg_e cfg)
+{
+  int reg = 0;
+  gpio_write(reg, cfg);
+}
+
+int rpio_gpio_set_val(uint32_t pin, gpio_val_e val)
+{
+  int reg_off;
+  
   if (pin >= 0  && pin <= 31) reg_off = 0;
   if (pin >= 32 && pin <= 53) reg_off = 1;
   if (pin > 53) {
     _err("pin should be < 53");
-    return 0;
+    return INVAL_ARGS;
   }
-  if (val == HI) {
-    *(base_addr+7+reg_off) = (1 << pin);
-  } else if (val == LO) {
-    *(base_addr+10+reg_off) = (1 << pin);
-  }
-  rpio_unmap_peripheral(gpio);
-  p->val = val;
-  return 1;
+
+  return EOK;
 }
 
-int rpioGet(rpio_pin_s *p, _rpio_val_e *val)
+int rpio_gpio_get_val(uint32_t pin, gpio_val_e *val)
 {
-  uint32_t *base_addr = NULL;
-  if(p == NULL) {
+  if(val == NULL) {
     _err("NULL arguments");
-    return 0;
+    return INVAL_ARGS;
   }
-  if(p->cfg != RPIO_INPUT) {
-    _err("cfg is not RPIO_INPUT");
-    return 0;
-  }
-  if(!rpio_map_peripheral(gpio)) {
-    return 0;
-  }
-  rpio_get_virt_addr(gpio, &base_addr);
 
-  int rd, reg_off, pin = p->pin;
+  int reg_off;
+
   if (pin >= 0  && pin <= 31) reg_off = 0;
   if (pin >= 32 && pin <= 53) reg_off = 1;
   if (pin > 53) {
     _err("pin should be < 53");
-    return 0;
+    return INVAL_ARGS;
   }
 
-  rd = *(base_addr+13+reg_off);
-  rd &= 1 << pin;
-  if (rd) {
-    *val   = HI;
-    p->val = HI;
-  } else {
-    *val   = LO;
-    p->val = LO;
-  }
-  rpio_unmap_peripheral(gpio);
-  return 1;
+//  int rd = *(base_addr+13+reg_off);
+  return EOK;
 }
 
 
 /**
  * RPIO TOOLBOX
  */
+//  int reg_off = pin/10;
+  
 
- static int _InitRpioIO(int pin, _rpio_cfg_e cfg)
- {
-   uint32_t *base_addr = NULL;
-   if(!rpio_map_peripheral(gpio)) {
-     return RPIOERR_MAP_FAIL;
-   }
-   rpio_get_virt_addr(gpio, &base_addr);
-   int bits;
-   switch(cfg) {
-     case RPIO_OUTPUT:
-       bits = 0b001;
-       break;
-     case RPIO_INPUT:
-       bits = 0b000;
-       break;
-     default:
-       return RPIOERR_WRONG_CFG;
-   }
-   int reg_off = pin/10;
-   printf("pin: %d, reg_off: %d, shift %d\n", pin, reg_off, (pin%10)*3);
-   *(base_addr + reg_off) &= ~(0b111 << (pin % 10)*3);
-   *(base_addr + reg_off) |= (bits << (pin % 10)*3);
-   rpio_unmap_peripheral(gpio);
-   return 1;
- }
+//   *(base_addr + reg_off) &= ~(0b111 << (pin % 10)*3);
+//   *(base_addr + reg_off) |= (bits << (pin % 10)*3);
 
 
