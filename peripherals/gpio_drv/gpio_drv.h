@@ -4,33 +4,22 @@
 #include <stdint.h>
 
 typedef enum {
-  RPIO_OUTPUT,
-  RPIO_INPUT
-} _rpio_cfg_e;
+  GPIO_OUTPUT,
+  GPIO_INPUT
+} gpio_cfg_e;
 
 typedef enum {
-  LO, HI
-} _rpio_val_e;
+  GPIO_LOW, 
+  GPIO_HIGH
+} gpio_val_e;
 
-typedef struct {
-  uint8_t     pin;
-  _rpio_cfg_e cfg;
-  _rpio_val_e val;
-} rpio_pin_s;
+// Device needs to be opened & closed to use methods.
+extern int rpio_gpio_open();
+extern int rpio_gpio_close();
 
-extern int rpioGpioDriverInit();
-extern int rpioInit(rpio_pin_s *p, int pin, _rpio_cfg_e cfg);
-extern int rpioSet (rpio_pin_s *p, _rpio_val_e val);
-extern int rpioGet (rpio_pin_s *p, _rpio_val_e *val);
-
-/* VERBOSITY LEVELS NOT IMPLEMENTED. */
-typedef enum {
-  RPIO_VERY_VERBOSE,
-  RPIO_VERBOSE,
-  RPIO_QUIET
-} _rpio_verbose_e;
-
-extern int rpioVerbosity(_rpio_verbose_e v);
-
+/* Stand-alone methods */
+extern int rpio_gpio_set_cfg(uint32_t pin, gpio_cfg_e cfg);
+extern int rpio_gpio_set_val(uint32_t pin, gpio_val_e val);
+extern int rpio_gpio_get_val(uint32_t pin, gpio_val_e* val);
 
 #endif //GPIO_DRV_H

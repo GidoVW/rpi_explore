@@ -6,6 +6,8 @@
 #define GPIO_OFFSET         0x00200000
 #define GPIO_BASE           (BCM2835_PERIPH_BASE + GPIO_OFFSET)
 
+#define BCM2835_NB_GPIO_PINS	53
+
 /*****************************************
 
 	REGISTER MAPPINGS

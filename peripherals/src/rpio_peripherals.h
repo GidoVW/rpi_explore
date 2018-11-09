@@ -6,7 +6,12 @@
 
 #define BLOCK_SIZE          (4*1024)
 
-typedef struct __rpio_periph_s *rpio_periph_t;
+typedef struct {
+  uint32_t          periph_hw_addr;
+  int               mem_fd;
+  void              *map;
+  volatile uint32_t *virt_addr;
+} rpio_periph_s;
 
 /************************************
  *          GPIO REGISTERS          *
@@ -46,14 +51,11 @@ typedef struct __rpio_periph_s *rpio_periph_t;
 
 */
 
-extern int  rpio_init_peripheral(rpio_periph_t *p, 
-	                          uint32_t         hw_addr);
-
-extern int rpio_get_virt_addr(rpio_periph_t p, 
+extern int rpio_get_virt_addr(rpio_periph_s p, 
 	                            uint32_t         **base_virt_addr);
 
-extern int  rpio_map_peripheral(rpio_periph_t p);
-extern void rpio_unmap_peripheral(rpio_periph_t p);
+extern int  rpio_map_peripheral(rpio_periph_s *p);
+extern void rpio_unmap_peripheral(rpio_periph_s *p);
 
 extern void _log_err(const char *func, const int line, char *msg, int errnum);
 
